@@ -7,7 +7,8 @@ export default {
   theme: {
     extend: {},
     fontFamily : {
-      'IBM': ['IBM Plex Sans', 'sans-serif']
+      'IBM': ['IBM Plex Sans', 'sans-serif'],
+      'IBM-mono': ['IBM Plex Mono', 'sans-serif']
     },
     colors: {
       'bgMain': '#000804',
