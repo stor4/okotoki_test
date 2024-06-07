@@ -8,7 +8,7 @@ export default {
     extend: {},
     fontFamily : {
       'IBM': ['IBM Plex Sans', 'sans-serif'],
-      'IBM-mono': ['IBM Plex Mono', 'sans-serif']
+      'IBM-Mono': ['IBM Plex Mono', 'sans-serif']
     },
     colors: {
       'bgMain': '#000804',
