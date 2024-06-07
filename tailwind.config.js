@@ -13,7 +13,8 @@ export default {
     colors: {
       'bgMain': '#000804',
       'textColor': '#e8e8e8',
-      'borderColor': '#515151'
+      'borderColor': '#515151',
+      'textGray': '#444444'
     }
   },
   plugins: [],

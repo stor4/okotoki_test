@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
-import { FixedSizeList as List } from 'react-window';
+import { useEffect, useRef, useState } from 'react'
+import { FixedSizeList as List } from 'react-window'
 import searchIcon from '@vscode/codicons/src/icons/search.svg'
 import close from '@vscode/codicons/src/icons/close.svg'
 import starFull from '@vscode/codicons/src/icons/star-full.svg'
-import SearchItem from './SearchItem';
+import sadIcon from '../assets/sad_icon.svg'
+import SearchItem from './SearchItem'
 import data from '../coins'
 import useLocalStorage from '../hooks/useLocaStorage'
 
@@ -14,7 +15,6 @@ function HeaderSearch() {
     const [favorites, setFavorites] = useLocalStorage('favorites', [])
     const containerRef = useRef(null)
     const inputRef = useRef(null)
-    // console.log(data)
     // console.log(favorites)
 
     const toggleFavorite = (currency) => {
@@ -35,6 +35,10 @@ function HeaderSearch() {
     }
 
     const filteredData = data.filter((item) =>
+        item.toLowerCase().includes(search.toLowerCase())
+    )
+
+    const filteredFavorites = favorites.filter((item) => 
         item.toLowerCase().includes(search.toLowerCase())
     )
 
@@ -62,10 +66,19 @@ function HeaderSearch() {
         }
     }, [containerRef])
 
+    const searchBTNStyle = `flex uppercase font-thin text-[16px] items-center px-[6px] py-[4px] rounded-[8px] hover:bg-textGray ${
+        open ? 'border-[gray] border-[2px]' : ''
+    }`
+
     const searchStyle = `
     min-h-[100px] w-[300px] absolute bg-bgMain transition-all duration-150 ease-in-out rounded-[8px] border-[1px] border-borderColor overflow-hidden right-0 mt-[5px] ${
         open ? 'opacity-100 visible' : 'opacity-0 invisible'
     }`
+
+    const noResultStyle = 'p-4 font-normal text-textGray text-[14px] text-center'
+
+    const favoritesBTN = `${liked ? 'font-semibold' : ''}`
+    const allCoinsBTN = `${liked ? '' : 'font-semibold'}`
 
     const deleteStyle = `
     ${search.length !== 0 ? 'display: block' : 'display: none'}
@@ -74,7 +87,7 @@ function HeaderSearch() {
 
   return (
     <div ref={containerRef} className='relative '>
-        <button className='flex uppercase font-thin text-[18px] items-center px-1 py-0.5 rounded-[8px] hover:bg-[gray]'
+        <button className={searchBTNStyle}
         onClick={() => setOpen(!open)}>
             <img src={searchIcon} className='h-[20px] mr-1.5' style={iconColor} alt="search" />
             Search
@@ -88,22 +101,29 @@ function HeaderSearch() {
                 </button>
             </div>
             <div className='flex gap-[20px] font-thin text-[16px] py-1.5 font-IBM-mono flex-row justify-center align-middle'>
-                <button className='uppercase p-1 rounded-[4px] flex items-center hover:bg-[gray]' onClick={() => setLiked(true)}>
+                <button className='uppercase p-1 rounded-[4px] flex items-center hover:bg-textGray]' onClick={() => setLiked(true)}>
                     <img src={starFull} style={{filter: 'brightness(0) saturate(100%) invert(25%) sepia(98%) saturate(0%) hue-rotate(75deg) brightness(107%) contrast(100%)'}} alt='favorites' className='mr-[4px] h-[24px] pb-1'/>
-                    <span>Favorites</span>
+                    <span className={favoritesBTN}>Favorites</span>
                 </button>
-                <button className='uppercase p-1 rounded-[4px] hover:bg-[gray]' onClick={() => setLiked(false)}>
-                    All coins
+                <button className='uppercase p-1 rounded-[4px] hover:bg-textGray' onClick={() => setLiked(false)}>
+                    <span className={allCoinsBTN}>All coins</span>
                 </button>
             </div>
-            <div className='max-h-[240px] overflow-y-auto '>
-                {liked ? <ul className='flex flex-col items-center'>
-                    {favorites.filter((item) => {
+            <div className='max-h-[240px] overflow-y-auto h-full'>
+                {liked ? <ul className='flex flex-col items-center h-full'>
+                    {filteredFavorites.length > 1 ? filteredFavorites.filter((item) => {
                         return search.toLowerCase() === '' ? item : item.toLowerCase().includes(search)
                     }).map((item, key) => 
                     <SearchItem name={item} key={key} setOpen={() => setOpen(false)} isFavorite={favorites.includes(item)} onToggleFavorite={() => toggleFavorite(item)}/>
+                    ) : (
+                        <div className={noResultStyle}>
+                            <img src={sadIcon} alt="search-result" />
+                            <span>Ooops, nothing founded</span>
+                         </div>
                     )}
+                    {/* {favorites.length === 1 && <p className='p-4 font-thin text-[14px] text-center'>No favorite coins(</p>} */}
                 </ul> : <ul className='flex flex-col items-center'>
+                    {filteredData.length > 0 ? (
                     <List
                     className='List'
                     height={250}
@@ -112,7 +132,13 @@ function HeaderSearch() {
                     width={300}
                     >
                         {Row}
-                    </List>
+                    </List> 
+                    ) : (
+                        <div className={noResultStyle}>
+                            <img src={sadIcon} alt="search-result" />
+                            <span>Ooops, nothing founded</span>
+                        </div>
+                    )}
                 </ul>}
             </div>
         </div>
