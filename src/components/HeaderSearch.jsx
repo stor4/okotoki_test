@@ -121,7 +121,7 @@ function HeaderSearch() {
                 <img src={searchIcon} className='h-[20px] mr-1.5 transform scale-x-[1]' style={iconColor} alt="search" />
                 Search
             </button>
-            {open && createPortal(
+            {createPortal(
                 <div ref={portalRef} className={searchStyle}>
                     <div className="flex p-2 border-b-[1px] relative border-b-borderColor">
                         <img src={searchIcon} className='h-[20px] mr-[5px] pt-1 pl-1' style={iconColor} alt="search" />

@@ -5,7 +5,6 @@ import HeaderBTNS from './HeaderBTNS'
 import HeaderSearch from './HeaderSearch'
 import AddIcon from '@vscode/codicons/src/icons/add.svg'
 
-
 function Header() {
   return (
     <header className='w-full flex flex-row fixed text-[white]'>
