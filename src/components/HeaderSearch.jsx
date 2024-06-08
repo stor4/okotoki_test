@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import searchIcon from '@vscode/codicons/src/icons/search.svg'
 import close from '@vscode/codicons/src/icons/close.svg'
 import starFull from '@vscode/codicons/src/icons/star-full.svg'
@@ -15,9 +16,11 @@ function HeaderSearch() {
     const containerRef = useRef(null)
     const inputRef = useRef(null)
     const listRef = useRef(null)
+    const portalRef = useRef(null)
     const [visibleData, setVisibleData] = useState([])
     const [startIndex, setStartIndex] = useState(0)
     const [endIndex, setEndIndex] = useState(10)
+    // console.log(search.length)
 
     const ITEM_HEIGHT = 35
     const LIST_HEIGHT = 250
@@ -41,7 +44,7 @@ function HeaderSearch() {
 
     const filteredData = useMemo(() => data.filter((item) =>
         item.toLowerCase().includes(search.toLowerCase())
-    ), [search, data])
+    ), [search])
 
     const filteredFavorites = useMemo(() => favorites.filter((item) =>
         item.toLowerCase().includes(search.toLowerCase())
@@ -75,7 +78,12 @@ function HeaderSearch() {
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (containerRef.current && !containerRef.current.contains(event.target)) {
+            if (
+                containerRef.current && 
+                !containerRef.current.contains(event.target) && 
+                portalRef.current && 
+                !portalRef.current.contains(event.target)
+            ) {
                 setOpen(false)
             }
         }
@@ -91,18 +99,17 @@ function HeaderSearch() {
     }`
 
     const searchStyle = `
-    min-h-[100px] w-[300px] absolute bg-bgMain transition-all duration-150 ease-in-out rounded-[8px] border-[1px] border-borderColor overflow-hidden right-0 mt-[5px] ${
+    min-h-[100px] w-[300px] absolute left-[250px] top-[46px] text-[white] bg-bgMain transition-all duration-150 ease-in-out rounded-[8px] border-[1px] border-borderColor overflow-hidden right-0 mt-[5px] font-IBM ${
         open ? 'opacity-100 visible' : 'opacity-0 invisible'
     }`
 
-    const noResultStyle = 'p-4 font-normal text-textGray text-[14px] text-cente flex flex-col items-center'
+    const noResultStyle = 'p-4 font-normal text-textGray text-[14px] text-center flex flex-col items-center'
 
     const favoritesBTN = `${liked ? 'font-semibold' : ''}`
     const allCoinsBTN = `${liked ? '' : 'font-semibold'}`
 
-    const deleteStyle = `
-    ${search.length !== 0 ? 'display: block' : 'display: none'}
-    `
+    const deleteStyle = `${search.length === 0 ? 'hidden' : 'block'}`
+
     const iconColor = { filter: 'brightness(0) saturate(100%) invert(93%) sepia(0%) saturate(7500%) hue-rotate(52deg) brightness(107%) contrast(109%)' }
 
     return (
@@ -111,58 +118,62 @@ function HeaderSearch() {
                 <img src={searchIcon} className='h-[20px] mr-1.5' style={iconColor} alt="search" />
                 Search
             </button>
-            <div className={searchStyle}>
-                <div className="flex p-2 border-b-[1px] relative border-b-borderColor">
-                    <img src={searchIcon} className='h-[20px] mr-[5px] pt-1 pl-1' style={iconColor} alt="search" />
-                    <input placeholder='Search...' ref={inputRef} onChange={(e) => setSearch(e.target.value)} className='bg-[transparent] text-[16px] w-full px-1 font-thin focus:outline-none focus:ring-0 focus:border-transparent pr-6 placeholder-textGray' type="text" />
-                    <button className={deleteStyle} onClick={clearSearch}>
-                        <img className='h-[24px] absolute right-[8px] top-[8px]' style={iconColor} src={close} alt="delete" />
-                    </button>
-                </div>
-                <div className='flex gap-[20px] font-thin text-[16px] py-1.5 font-IBM-mono flex-row justify-center align-middle'>
-                    <button className='uppercase p-1 rounded-[4px] flex items-center hover:bg-textGray' onClick={() => setLiked(true)}>
-                        <img src={starFull} style={{ filter: 'brightness(0) saturate(100%) invert(25%) sepia(98%) saturate(0%) hue-rotate(75deg) brightness(107%) contrast(100%)' }} alt='favorites' className='mr-[4px] h-[24px] pb-1' />
-                        <span className={favoritesBTN}>Favorites</span>
-                    </button>
-                    <button className='uppercase p-1 rounded-[4px] hover:bg-textGray' onClick={() => setLiked(false)}>
-                        <span className={allCoinsBTN}>All coins</span>
-                    </button>
-                </div>
-                <div ref={listRef} className='max-h-[240px] overflow-y-auto h-full'>
-                    {liked ? (
-                        <ul className='flex flex-col items-center h-full'>
-                            {filteredFavorites.length > 0 ? filteredFavorites.map((item, key) =>
-                                <SearchItem name={item} key={key} setOpen={() => setOpen(false)} isFavorite={favorites.includes(item)} onToggleFavorite={() => toggleFavorite(item)} />
+            {open && createPortal(
+                <div ref={portalRef} className={searchStyle}>
+                    <div className="flex p-2 border-b-[1px] relative border-b-borderColor">
+                        <img src={searchIcon} className='h-[20px] mr-[5px] pt-1 pl-1' style={iconColor} alt="search" />
+                        <input placeholder='Search...' ref={inputRef} onChange={(e) => setSearch(e.target.value)} className='bg-[transparent] text-[16px] w-full px-1 font-thin focus:outline-none focus:ring-0 focus:border-transparent pr-6 placeholder-textGray' type="text" />
+                        <button className={deleteStyle} onClick={clearSearch}>
+                            <img className='h-[24px] absolute right-[8px] top-[8px]' style={iconColor} src={close} alt="delete" />
+                        </button>
+                    </div>
+                    <div className='flex gap-[20px] font-thin text-[16px] py-1.5 font-IBM-mono flex-row justify-center align-middle'>
+                        <button className='uppercase p-1 rounded-[4px] flex items-center hover:bg-textGray' onClick={() => setLiked(true)}>
+                            <img src={starFull} style={{ filter: 'brightness(0) saturate(100%) invert(25%) sepia(98%) saturate(0%) hue-rotate(75deg) brightness(107%) contrast(100%)' }} alt='favorites' className='mr-[4px] h-[24px] pb-1' />
+                            <span className={favoritesBTN}>Favorites</span>
+                        </button>
+                        <button className='uppercase p-1 rounded-[4px] hover:bg-textGray' onClick={() => setLiked(false)}>
+                            <span className={allCoinsBTN}>All coins</span>
+                        </button>
+                    </div>
+                    <div ref={listRef} className='max-h-[240px] overflow-y-auto h-full'>
+                        {liked ? (
+                            <ul className='flex flex-col items-center h-full'>
+                                {filteredFavorites.length > 0 ? filteredFavorites.map((item, key) =>
+                                    <SearchItem name={item} key={key} setOpen={() => setOpen(false)} isFavorite={favorites.includes(item)} onToggleFavorite={() => toggleFavorite(item)} />
+                                ) : (
+                                    <div className={noResultStyle}>
+                                        <img src={sadIcon} className='h-[134px]' alt="search-result" />
+                                        <span>Ooops, nothing found</span>
+                                    </div>
+                                )}
+                            </ul>
+                        ) : (
+                            filteredData.length > 0 ? (
+                                <div style={{ height: filteredData.length * ITEM_HEIGHT + 'px', position: 'relative' }}>
+                                    {visibleData.map((item, index) => (
+                                        <div key={index + startIndex} style={{ position: 'absolute', top: (startIndex + index) * ITEM_HEIGHT + 'px', left: 0, right: 0 }}>
+                                            <SearchItem
+                                                name={item}
+                                                isFavorite={favorites.includes(item)}
+                                                onToggleFavorite={() => toggleFavorite(item)}
+                                                setOpen={() => setOpen(false)} 
+                                                style={{ height: ITEM_HEIGHT }}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
                             ) : (
                                 <div className={noResultStyle}>
-                                    <img src={sadIcon} alt="search-result" />
+                                    <img src={sadIcon} className='h-[134px]' alt="search-result" />
                                     <span>Ooops, nothing found</span>
                                 </div>
-                            )}
-                        </ul>
-                    ) : (
-                        filteredData.length > 0 ? (
-                            <div style={{ height: filteredData.length * ITEM_HEIGHT + 'px', position: 'relative' }}>
-                                {visibleData.map((item, index) => (
-                                    <div key={index + startIndex} style={{ position: 'absolute', top: (startIndex + index) * ITEM_HEIGHT + 'px', left: 0, right: 0 }}>
-                                        <SearchItem
-                                            name={item}
-                                            isFavorite={favorites.includes(item)}
-                                            onToggleFavorite={() => toggleFavorite(item)}
-                                            style={{ height: ITEM_HEIGHT }}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className={noResultStyle}>
-                                <img src={sadIcon} className='h-[134px]' alt="search-result" />
-                                <span>Ooops, nothing found</span>
-                            </div>
-                        )
-                    )}
-                </div>
-            </div>
+                            )
+                        )}
+                    </div>
+                </div>,
+                document.getElementById('portal-root')
+            )}
         </div>
     )
 }
