@@ -99,7 +99,7 @@ function HeaderSearch() {
     }`
 
     const searchStyle = `
-    min-h-[100px] w-[300px] absolute left-[250px] top-[46px] text-[white] bg-bgMain transition-all duration-150 ease-in-out rounded-[8px] border-[1px] border-borderColor overflow-hidden right-0 mt-[5px] font-IBM ${
+    min-h-[100px] w-[300px] absolute left-[250px] top-[46px] text-[white] bg-bgMain transition-all duration-150 ease-in-out rounded-[8px] border-[1px] border-borderColor overflow-hidden right-0 mt-[5px] font-IBM select-none ${
         open ? 'opacity-100 visible' : 'opacity-0 invisible'
     }`;
 
