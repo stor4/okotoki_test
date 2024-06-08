@@ -86,7 +86,7 @@ function HeaderSearch() {
     const iconColor = {filter: 'brightness(0) saturate(100%) invert(93%) sepia(0%) saturate(7500%) hue-rotate(52deg) brightness(107%) contrast(109%)'}
 
   return (
-    <div ref={containerRef} className='relative '>
+    <div ref={containerRef} className='relative select-none'>
         <button className={searchBTNStyle}
         onClick={() => setOpen(!open)}>
             <img src={searchIcon} className='h-[20px] mr-1.5' style={iconColor} alt="search" />
@@ -95,7 +95,7 @@ function HeaderSearch() {
         <div className={searchStyle}>
             <div className="flex p-2 border-b-[1px] relative border-b-borderColor">
                 <img src={searchIcon} className='h-[20px] mr-[5px] pt-1 pl-1' style={iconColor} alt="search" />
-                <input placeholder='Search...' ref={inputRef} onChange={(e) => setSearch(e.target.value)} className='bg-[transparent] text-[16px] w-full px-1 font-thin focus:outline-none focus:ring-0 focus:border-transparent pr-6' type="text" />
+                <input placeholder='Search...' ref={inputRef} onChange={(e) => setSearch(e.target.value)} className='bg-[transparent] text-[16px] w-full px-1 font-thin focus:outline-none focus:ring-0 focus:border-transparent pr-6 placeholder-textGray' type="text" />
                 <button className={deleteStyle} onClick={clearSearch}>
                     <img className='h-[24px] absolute right-[8px] top-[8px]' style={iconColor} src={close} alt="delete" />
                 </button>
@@ -118,10 +118,9 @@ function HeaderSearch() {
                     ) : (
                         <div className={noResultStyle}>
                             <img src={sadIcon} alt="search-result" />
-                            <span>Ooops, nothing founded</span>
+                            <span>Ooops, nothing found</span>
                          </div>
                     )}
-                    {/* {favorites.length === 1 && <p className='p-4 font-thin text-[14px] text-center'>No favorite coins(</p>} */}
                 </ul> : <ul className='flex flex-col items-center'>
                     {filteredData.length > 0 ? (
                     <List
@@ -136,7 +135,7 @@ function HeaderSearch() {
                     ) : (
                         <div className={noResultStyle}>
                             <img src={sadIcon} alt="search-result" />
-                            <span>Ooops, nothing founded</span>
+                            <span>Ooops, nothing found</span>
                         </div>
                     )}
                 </ul>}
