@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
-import { FixedSizeList as List } from 'react-window'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import searchIcon from '@vscode/codicons/src/icons/search.svg'
 import close from '@vscode/codicons/src/icons/close.svg'
 import starFull from '@vscode/codicons/src/icons/star-full.svg'
@@ -15,7 +14,13 @@ function HeaderSearch() {
     const [favorites, setFavorites] = useLocalStorage('favorites', [])
     const containerRef = useRef(null)
     const inputRef = useRef(null)
-    // console.log(favorites)
+    const listRef = useRef(null)
+    const [visibleData, setVisibleData] = useState([])
+    const [startIndex, setStartIndex] = useState(0)
+    const [endIndex, setEndIndex] = useState(10)
+
+    const ITEM_HEIGHT = 35
+    const LIST_HEIGHT = 250
 
     const toggleFavorite = (currency) => {
         setFavorites((prevFavorites) => {
@@ -34,24 +39,39 @@ function HeaderSearch() {
         }
     }
 
-    const filteredData = data.filter((item) =>
+    const filteredData = useMemo(() => data.filter((item) =>
         item.toLowerCase().includes(search.toLowerCase())
-    )
+    ), [search, data])
 
-    const filteredFavorites = favorites.filter((item) => 
+    const filteredFavorites = useMemo(() => favorites.filter((item) =>
         item.toLowerCase().includes(search.toLowerCase())
-    )
+    ), [search, favorites])
 
-    const Row = ({index, style}) => (
-        <div style={style}>
-            <SearchItem
-            key={filteredData[index]}
-            name={filteredData[index]}
-            isFavorite={favorites.includes(filteredData[index])}
-            onToggleFavorite={() => toggleFavorite(filteredData[index])}
-            />
-        </div>
-    )
+    const handleScroll = useCallback(() => {
+        if (listRef.current) {
+            const scrollTop = listRef.current.scrollTop
+            const newStartIndex = Math.floor(scrollTop / ITEM_HEIGHT)
+            const newEndIndex = newStartIndex + Math.ceil(LIST_HEIGHT / ITEM_HEIGHT)
+
+            setStartIndex(newStartIndex)
+            setEndIndex(newEndIndex)
+        }
+    }, [])
+
+    useEffect(() => {
+        setVisibleData(filteredData.slice(startIndex, endIndex))
+    }, [filteredData, startIndex, endIndex])
+
+    useEffect(() => {
+        if (listRef.current) {
+            listRef.current.addEventListener('scroll', handleScroll)
+        }
+        return () => {
+            if (listRef.current) {
+                listRef.current.removeEventListener('scroll', handleScroll)
+            }
+        }
+    }, [handleScroll])
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -64,7 +84,7 @@ function HeaderSearch() {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside)
         }
-    }, [containerRef])
+    }, [])
 
     const searchBTNStyle = `flex uppercase font-thin text-[16px] items-center px-[6px] py-[4px] rounded-[8px] hover:bg-textGray ${
         open ? 'border-[gray] border-[2px]' : ''
@@ -75,7 +95,7 @@ function HeaderSearch() {
         open ? 'opacity-100 visible' : 'opacity-0 invisible'
     }`
 
-    const noResultStyle = 'p-4 font-normal text-textGray text-[14px] text-center'
+    const noResultStyle = 'p-4 font-normal text-textGray text-[14px] text-cente flex flex-col items-center'
 
     const favoritesBTN = `${liked ? 'font-semibold' : ''}`
     const allCoinsBTN = `${liked ? '' : 'font-semibold'}`
@@ -83,66 +103,68 @@ function HeaderSearch() {
     const deleteStyle = `
     ${search.length !== 0 ? 'display: block' : 'display: none'}
     `
-    const iconColor = {filter: 'brightness(0) saturate(100%) invert(93%) sepia(0%) saturate(7500%) hue-rotate(52deg) brightness(107%) contrast(109%)'}
+    const iconColor = { filter: 'brightness(0) saturate(100%) invert(93%) sepia(0%) saturate(7500%) hue-rotate(52deg) brightness(107%) contrast(109%)' }
 
-  return (
-    <div ref={containerRef} className='relative select-none'>
-        <button className={searchBTNStyle}
-        onClick={() => setOpen(!open)}>
-            <img src={searchIcon} className='h-[20px] mr-1.5' style={iconColor} alt="search" />
-            Search
-        </button>
-        <div className={searchStyle}>
-            <div className="flex p-2 border-b-[1px] relative border-b-borderColor">
-                <img src={searchIcon} className='h-[20px] mr-[5px] pt-1 pl-1' style={iconColor} alt="search" />
-                <input placeholder='Search...' ref={inputRef} onChange={(e) => setSearch(e.target.value)} className='bg-[transparent] text-[16px] w-full px-1 font-thin focus:outline-none focus:ring-0 focus:border-transparent pr-6 placeholder-textGray' type="text" />
-                <button className={deleteStyle} onClick={clearSearch}>
-                    <img className='h-[24px] absolute right-[8px] top-[8px]' style={iconColor} src={close} alt="delete" />
-                </button>
-            </div>
-            <div className='flex gap-[20px] font-thin text-[16px] py-1.5 font-IBM-mono flex-row justify-center align-middle'>
-                <button className='uppercase p-1 rounded-[4px] flex items-center hover:bg-textGray]' onClick={() => setLiked(true)}>
-                    <img src={starFull} style={{filter: 'brightness(0) saturate(100%) invert(25%) sepia(98%) saturate(0%) hue-rotate(75deg) brightness(107%) contrast(100%)'}} alt='favorites' className='mr-[4px] h-[24px] pb-1'/>
-                    <span className={favoritesBTN}>Favorites</span>
-                </button>
-                <button className='uppercase p-1 rounded-[4px] hover:bg-textGray' onClick={() => setLiked(false)}>
-                    <span className={allCoinsBTN}>All coins</span>
-                </button>
-            </div>
-            <div className='max-h-[240px] overflow-y-auto h-full'>
-                {liked ? <ul className='flex flex-col items-center h-full'>
-                    {filteredFavorites.length > 1 ? filteredFavorites.filter((item) => {
-                        return search.toLowerCase() === '' ? item : item.toLowerCase().includes(search)
-                    }).map((item, key) => 
-                    <SearchItem name={item} key={key} setOpen={() => setOpen(false)} isFavorite={favorites.includes(item)} onToggleFavorite={() => toggleFavorite(item)}/>
+    return (
+        <div ref={containerRef} className='relative select-none'>
+            <button className={searchBTNStyle} onClick={() => setOpen(!open)}>
+                <img src={searchIcon} className='h-[20px] mr-1.5' style={iconColor} alt="search" />
+                Search
+            </button>
+            <div className={searchStyle}>
+                <div className="flex p-2 border-b-[1px] relative border-b-borderColor">
+                    <img src={searchIcon} className='h-[20px] mr-[5px] pt-1 pl-1' style={iconColor} alt="search" />
+                    <input placeholder='Search...' ref={inputRef} onChange={(e) => setSearch(e.target.value)} className='bg-[transparent] text-[16px] w-full px-1 font-thin focus:outline-none focus:ring-0 focus:border-transparent pr-6 placeholder-textGray' type="text" />
+                    <button className={deleteStyle} onClick={clearSearch}>
+                        <img className='h-[24px] absolute right-[8px] top-[8px]' style={iconColor} src={close} alt="delete" />
+                    </button>
+                </div>
+                <div className='flex gap-[20px] font-thin text-[16px] py-1.5 font-IBM-mono flex-row justify-center align-middle'>
+                    <button className='uppercase p-1 rounded-[4px] flex items-center hover:bg-textGray' onClick={() => setLiked(true)}>
+                        <img src={starFull} style={{ filter: 'brightness(0) saturate(100%) invert(25%) sepia(98%) saturate(0%) hue-rotate(75deg) brightness(107%) contrast(100%)' }} alt='favorites' className='mr-[4px] h-[24px] pb-1' />
+                        <span className={favoritesBTN}>Favorites</span>
+                    </button>
+                    <button className='uppercase p-1 rounded-[4px] hover:bg-textGray' onClick={() => setLiked(false)}>
+                        <span className={allCoinsBTN}>All coins</span>
+                    </button>
+                </div>
+                <div ref={listRef} className='max-h-[240px] overflow-y-auto h-full'>
+                    {liked ? (
+                        <ul className='flex flex-col items-center h-full'>
+                            {filteredFavorites.length > 0 ? filteredFavorites.map((item, key) =>
+                                <SearchItem name={item} key={key} setOpen={() => setOpen(false)} isFavorite={favorites.includes(item)} onToggleFavorite={() => toggleFavorite(item)} />
+                            ) : (
+                                <div className={noResultStyle}>
+                                    <img src={sadIcon} alt="search-result" />
+                                    <span>Ooops, nothing found</span>
+                                </div>
+                            )}
+                        </ul>
                     ) : (
-                        <div className={noResultStyle}>
-                            <img src={sadIcon} alt="search-result" />
-                            <span>Ooops, nothing found</span>
-                         </div>
+                        filteredData.length > 0 ? (
+                            <div style={{ height: filteredData.length * ITEM_HEIGHT + 'px', position: 'relative' }}>
+                                {visibleData.map((item, index) => (
+                                    <div key={index + startIndex} style={{ position: 'absolute', top: (startIndex + index) * ITEM_HEIGHT + 'px', left: 0, right: 0 }}>
+                                        <SearchItem
+                                            name={item}
+                                            isFavorite={favorites.includes(item)}
+                                            onToggleFavorite={() => toggleFavorite(item)}
+                                            style={{ height: ITEM_HEIGHT }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className={noResultStyle}>
+                                <img src={sadIcon} className='h-[134px]' alt="search-result" />
+                                <span>Ooops, nothing found</span>
+                            </div>
+                        )
                     )}
-                </ul> : <ul className='flex flex-col items-center'>
-                    {filteredData.length > 0 ? (
-                    <List
-                    className='List'
-                    height={250}
-                    itemCount={filteredData.length}
-                    itemSize={35}
-                    width={300}
-                    >
-                        {Row}
-                    </List> 
-                    ) : (
-                        <div className={noResultStyle}>
-                            <img src={sadIcon} alt="search-result" />
-                            <span>Ooops, nothing found</span>
-                        </div>
-                    )}
-                </ul>}
+                </div>
             </div>
         </div>
-    </div>
-  )
+    )
 }
 
 export default HeaderSearch
