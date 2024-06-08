@@ -20,8 +20,6 @@ function HeaderSearch() {
     const [visibleData, setVisibleData] = useState([])
     const [startIndex, setStartIndex] = useState(0)
     const [endIndex, setEndIndex] = useState(10)
-    // console.log(search.length)
-
     const ITEM_HEIGHT = 35
     const LIST_HEIGHT = 250
 
@@ -52,36 +50,38 @@ function HeaderSearch() {
 
     const handleScroll = useCallback(() => {
         if (listRef.current) {
-            const scrollTop = listRef.current.scrollTop
-            const newStartIndex = Math.floor(scrollTop / ITEM_HEIGHT)
+            const scrollTop = listRef.current.scrollTop;
+            const newStartIndex = Math.floor(scrollTop / ITEM_HEIGHT);
             const newEndIndex = newStartIndex + Math.ceil(LIST_HEIGHT / ITEM_HEIGHT)
 
             setStartIndex(newStartIndex)
             setEndIndex(newEndIndex)
         }
-    }, [])
+    }, [ITEM_HEIGHT, LIST_HEIGHT])
 
     useEffect(() => {
-        setVisibleData(filteredData.slice(startIndex, endIndex))
+        const updatedVisibleData = filteredData.slice(startIndex, endIndex);
+        setVisibleData(updatedVisibleData)
     }, [filteredData, startIndex, endIndex])
 
     useEffect(() => {
-        if (listRef.current) {
-            listRef.current.addEventListener('scroll', handleScroll)
-        }
-        return () => {
+        if (open) {
+            if (listRef.current) {
+                listRef.current.addEventListener('scroll', handleScroll)
+            } 
+        } else {
             if (listRef.current) {
                 listRef.current.removeEventListener('scroll', handleScroll)
             }
         }
-    }, [handleScroll])
+    }, [open, handleScroll])
 
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (
-                containerRef.current && 
-                !containerRef.current.contains(event.target) && 
-                portalRef.current && 
+                containerRef.current &&
+                !containerRef.current.contains(event.target) &&
+                portalRef.current &&
                 !portalRef.current.contains(event.target)
             ) {
                 setOpen(false)
@@ -101,9 +101,9 @@ function HeaderSearch() {
     const searchStyle = `
     min-h-[100px] w-[300px] absolute left-[250px] top-[46px] text-[white] bg-bgMain transition-all duration-150 ease-in-out rounded-[8px] border-[1px] border-borderColor overflow-hidden right-0 mt-[5px] font-IBM ${
         open ? 'opacity-100 visible' : 'opacity-0 invisible'
-    }`
+    }`;
 
-    const noResultStyle = 'p-4 font-normal text-textGray text-[14px] text-center flex flex-col items-center'
+    const noResultStyle = 'p-4 font-normal text-textGray text-[14px] text-center flex flex-col items-center';
 
     const favoritesBTN = `${liked ? 'font-semibold' : ''}`
     const allCoinsBTN = `${liked ? '' : 'font-semibold'}`
