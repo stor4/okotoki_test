@@ -8,7 +8,7 @@ import AddIcon from '@vscode/codicons/src/icons/add.svg'
 
 function Header() {
   return (
-    <header className='w-full flex flex-row text-[white]'>
+    <header className='w-full flex flex-row fixed text-[white]'>
         <nav className='flex flex-row p-[10px]'>
             <img src={logo} alt="logo" />
             <img className='ml-[10px]' src={title} alt="title" />

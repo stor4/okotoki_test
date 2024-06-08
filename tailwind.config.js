@@ -12,7 +12,7 @@ export default {
     },
     colors: {
       'bgMain': '#000804',
-      'textColor': '#e8e8e8',
+      'textColor': '#e0e0e0',
       'borderColor': '#515151',
       'textGray': '#444444'
     }

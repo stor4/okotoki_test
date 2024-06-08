@@ -20,8 +20,8 @@ function HeaderSearch() {
     const [visibleData, setVisibleData] = useState([])
     const [startIndex, setStartIndex] = useState(0)
     const [endIndex, setEndIndex] = useState(10)
-    const ITEM_HEIGHT = 35
-    const LIST_HEIGHT = 250
+    const ITEM_HEIGHT = 44
+    const LIST_HEIGHT = 270
 
     const toggleFavorite = (currency) => {
         setFavorites((prevFavorites) => {
@@ -95,27 +95,30 @@ function HeaderSearch() {
     }, [])
 
     const searchBTNStyle = `flex uppercase font-thin text-[16px] items-center px-[6px] py-[4px] rounded-[8px] hover:bg-textGray ${
-        open ? 'border-[gray] border-[2px]' : ''
+        open ? 'border-[gray] border-[2px] bg-textGray' : ''
     }`
 
     const searchStyle = `
-    min-h-[100px] w-[300px] absolute left-[250px] top-[46px] text-[white] bg-bgMain transition-all duration-150 ease-in-out rounded-[8px] border-[1px] border-borderColor overflow-hidden right-0 mt-[5px] font-IBM select-none ${
+    min-h-[100px] w-[300px] absolute left-[250px] top-[46px] text-[white] bg-bgMain transition-all duration-150 ease-in-out rounded-[8px] border-[1px] border-borderColor overflow-hidden right-0 mt-[5px] font-IBM select-none text-textColor ${
         open ? 'opacity-100 visible' : 'opacity-0 invisible'
     }`;
 
     const noResultStyle = 'p-4 font-normal text-textGray text-[14px] text-center flex flex-col items-center';
 
-    const favoritesBTN = `${liked ? 'font-semibold' : ''}`
-    const allCoinsBTN = `${liked ? '' : 'font-semibold'}`
+    const favoritesBTN = `uppercase p-1 rounded-[4px] flex items-center
+    ${liked ? 'font-semibold cursor-default' : 'hover:bg-textGray'}`
+
+    const allCoinsBTN = `uppercase p-1 rounded-[4px]
+    ${liked ? 'hover:bg-textGray' : 'font-semibold cursor-default'}`
 
     const deleteStyle = `${search.length === 0 ? 'hidden' : 'block'}`
 
     const iconColor = { filter: 'brightness(0) saturate(100%) invert(93%) sepia(0%) saturate(7500%) hue-rotate(52deg) brightness(107%) contrast(109%)' }
 
     return (
-        <div ref={containerRef} className='relative select-none'>
+        <div ref={containerRef} className='relative select-none text-textColor'>
             <button className={searchBTNStyle} onClick={() => setOpen(!open)}>
-                <img src={searchIcon} className='h-[20px] mr-1.5' style={iconColor} alt="search" />
+                <img src={searchIcon} className='h-[20px] mr-1.5 transform scale-x-[1]' style={iconColor} alt="search" />
                 Search
             </button>
             {open && createPortal(
@@ -128,15 +131,15 @@ function HeaderSearch() {
                         </button>
                     </div>
                     <div className='flex gap-[20px] font-thin text-[16px] py-1.5 font-IBM-mono flex-row justify-center align-middle'>
-                        <button className='uppercase p-1 rounded-[4px] flex items-center hover:bg-textGray' onClick={() => setLiked(true)}>
+                        <button disabled={liked} className={favoritesBTN} onClick={() => setLiked(true)}>
                             <img src={starFull} style={{ filter: 'brightness(0) saturate(100%) invert(25%) sepia(98%) saturate(0%) hue-rotate(75deg) brightness(107%) contrast(100%)' }} alt='favorites' className='mr-[4px] h-[24px] pb-1' />
-                            <span className={favoritesBTN}>Favorites</span>
+                            <span >Favorites</span>
                         </button>
-                        <button className='uppercase p-1 rounded-[4px] hover:bg-textGray' onClick={() => setLiked(false)}>
-                            <span className={allCoinsBTN}>All coins</span>
+                        <button disabled={!liked} className={allCoinsBTN} onClick={() => setLiked(false)}>
+                            <span className='uppercase'>All coins</span>
                         </button>
                     </div>
-                    <div ref={listRef} className='max-h-[240px] overflow-y-auto h-full'>
+                    <div ref={listRef} className='max-h-[260px] overflow-y-auto h-full'>
                         {liked ? (
                             <ul className='flex flex-col items-center h-full'>
                                 {filteredFavorites.length > 0 ? filteredFavorites.map((item, key) =>
